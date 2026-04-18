@@ -11,6 +11,7 @@ ui.label("Harry Demo – Minimal UI")
 with ui.row():
     ui.button("Visa kandidater", on_click=lambda: ui.notify("Kommer snart"))
     ui.button("Matchning", on_click=lambda: ui.notify("Kommer snart"))
+    ui.label ("För mer information, besök vår GitHub:").classes("text-sm")
 
     
 
