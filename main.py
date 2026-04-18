@@ -12,7 +12,7 @@ with ui.row():
     ui.button("Visa kandidater", on_click=lambda: ui.notify("Kommer snart"))
     ui.button("Matchning", on_click=lambda: ui.notify("Kommer snart"))
     ui.label ("För mer information, besök vår GitHub:").classes("text-sm")
-
+    ui.label("bajen är bäst").classes("text-sm text-blue-500")
     
-
-ui.run(port=8091)
+if __name__ in {"__main__", "__mp_main__"}:
+    ui.run(port=8091)
