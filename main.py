@@ -4,8 +4,6 @@ from matplotlib.pyplot import grid
 from nicegui import ui
 import plotly.express as px
 from faker import Faker
-from torch import classes
-from backend.models import JobCandidateScore
 import random
 from typing import List
 from nicegui import ui
