@@ -412,10 +412,9 @@ class CandidateTable:
 
 candidates, jobs = generate_test_data(10, 10)
 df = generate_scores_df(candidates, jobs, 100)
-print (df.head())
 
-@ui.page('/')
-def main_page():
+def consultants_page():
+    left_drawer()
     def update_table():
         new_candidates, new_jobs = generate_test_data(10, 10)
         new_df = generate_scores_df(new_candidates, new_jobs, 100)
