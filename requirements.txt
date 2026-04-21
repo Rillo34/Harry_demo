@@ -9,3 +9,4 @@ plotly
 faker
 griffe
 matplotlib
+datetime

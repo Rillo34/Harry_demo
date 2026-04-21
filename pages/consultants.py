@@ -7,6 +7,7 @@ import pandas as pd
 from typing import List
 from pandas import DataFrame
 from components.leftdrawer import left_drawer
+from datetime import datetime, timedelta
 
 
 #------------------
@@ -17,6 +18,7 @@ def generate_test_data(n_candidates: int, n_jobs: int):
     fake = Faker("sv_SE")
     start_date = pd.to_datetime("2025-10-01")
     end_date = pd.to_datetime("2026-12-31")
+    today = datetime.today()
     candidates = [
         {"cand_id": f"cand_{i+1:04d}", "cand_name": fake.name(), "last_assignment_date": fake.date_between_dates(date_start=start_date, date_end=end_date)}
         for i in range(n_candidates)
@@ -34,10 +36,18 @@ def generate_test_data(n_candidates: int, n_jobs: int):
         "Scania IT", "Tink", "Sinch", "Voi", "Blocket",
         "Skatteverket IT", "Försäkringskassan IT", "Polisen IT"
     ]
-    jobs = [
-        {"job_id": f"job_{i+1:03d}", "title": fake.random_element(it_roles), "customer": fake.random_element(it_customers_pool)}
-        for i in range(n_jobs)
-    ]
+    jobs =[]
+    for i in range(n_jobs):
+        received_date = today - timedelta(days=random.randint(0, 10))
+        due_date = today + timedelta(days=random.randint(0, 14))
+
+        jobs.append({
+            "job_id": f"job_{i+1:03d}",
+            "title": fake.random_element(it_roles),
+            "customer": fake.random_element(it_customers_pool),
+            "received_date": received_date.strftime('%Y-%m-%d'),
+            "due_date": due_date.strftime('%Y-%m-%d'),
+        })
     return candidates, jobs
 
 def generate_scores_df(candidates: list[dict], jobs: list[dict], nr_rows: int) -> pd.DataFrame:
@@ -56,6 +66,8 @@ def generate_scores_df(candidates: list[dict], jobs: list[dict], nr_rows: int) -
             "cand_name": cand["cand_name"],
             "job_title": job["title"],
             "customer": job["customer"],
+            "received_date": job["received_date"],
+            "due_date": job["due_date"],
             "comp_score": comp_score,
             "avail_score": avail_score,
             "combined_score": round((comp_score * 0.5) + (avail_score * 0.5), 0),
@@ -67,14 +79,18 @@ def generate_scores_df(candidates: list[dict], jobs: list[dict], nr_rows: int) -
             "cv_sent_at": "",
             "id": f"{cand['cand_id']}_{job['job_id']}"
         })
+        df = pd.DataFrame(rows)
+        df['due_date'] = pd.to_datetime(df['due_date'])
+        today = datetime.today().date()
+        df['days_left'] = (df['due_date'] - pd.Timestamp(today)).dt.days
+        df['due_date'] = df['due_date'].dt.strftime('%Y-%m-%d')
+    return df
 
-    return pd.DataFrame(rows)
-
-def handle_status_change(e, row):
+def handle_status_change(e, row):  # NOT USED NOW
     ui.notify(f'Status ändrad för rad {row["id"]}: {e.value}')
     # row['status'] = e.value   # om du vill uppdatera direkt
 
-def open_popup(row):
+def open_popup(row): # NOT USED NOW
     with ui.dialog() as dialog, ui.card():
         ui.label(f'Redigerar rad {row["id"]} - {row["name"]}').classes('text-lg')
         ui.input('Namn').bind_value(row, 'name')
@@ -185,6 +201,7 @@ class CandidateTable:
                         {'name': 'cand_name', 'label': 'Candidate', 'field': 'cand_name', 'sortable': True},
                         {'name': 'job_title', 'label': 'Job Title', 'field': 'job_title', 'sortable': True},
                         {'name': 'customer', 'label': 'Customer', 'field': 'customer', 'sortable': True},
+                        {'name': 'days_left', 'label': 'Due in days', 'field': 'days_left', 'sortable': True},
                         {'name': 'comp_score', 'label': 'Match Rating', 'field': 'comp_score', 'sortable': True},
                         {'name': 'combined_score', 'label': 'Overall Rating', 'field': 'combined_score', 'sortable': True},
                         {'name': 'availability', 'label': 'Availability', 'field': 'weeks_since_last_assignment', 'sortable': True},
@@ -252,6 +269,21 @@ class CandidateTable:
 
             </q-td>
         ''')
+        self.table.add_slot('body-cell-days_left', '''
+            <q-td :props="props" class="text-right">
+                <q-badge
+                :color="props.row.days_left <= 2 ? 'red' :
+                        props.row.days_left <= 6 ? 'orange' : 'grey-7'"
+                text-color="white"
+                style="font-weight:700; font-size:13px; min-width:40px;
+                        display:inline-flex; justify-content:center;"
+                >
+                {{ props.row.days_left }}
+                </q-badge>
+            </q-td>
+            ''')
+
+
         self.table.on('name_click', self.name_click)
         self.table.on('cv-click', self.cv_click)
 
@@ -380,10 +412,10 @@ class CandidateTable:
 
 candidates, jobs = generate_test_data(10, 10)
 df = generate_scores_df(candidates, jobs, 100)
+print (df.head())
 
-def consultants_page():
-    # Render drawer on this page
-    left_drawer()    
+@ui.page('/')
+def main_page():
     def update_table():
         new_candidates, new_jobs = generate_test_data(10, 10)
         new_df = generate_scores_df(new_candidates, new_jobs, 100)
@@ -401,5 +433,7 @@ def consultants_page():
         ui.button('New data', on_click=update_table)
         ui.label('There are 100 rows in the table, take filter to ZERO to see all').classes('text-sm text-slate-500')
     candidate_table.build()
+    
+
     
 
