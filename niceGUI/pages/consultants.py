@@ -1,4 +1,3 @@
-from tkinter import dialog
 from nicegui import ui
 import random
 from faker import Faker
