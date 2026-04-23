@@ -1,8 +1,11 @@
 from nicegui import ui
 from components.leftdrawer import left_drawer
+from niceGUI.app_state import API_client, ui_controller
+
 
 def home_page():
     # Render drawer on this page
+    ui.button("Test data", on_click=ui.notify("test"))
     left_drawer()
     with ui.column().classes('w-full items-start gap-6 p-4'):
 
