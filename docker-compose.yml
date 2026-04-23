@@ -4,20 +4,16 @@ services:
     build:
       context: ./backend
     container_name: harry_backend
-    volumes:
-      - ./backend:/backend
     ports:
       - "8100:8100"
-    command: uvicorn main:app --host 0.0.0.0 --port 8100
     restart: always
+    command: uvicorn main:app --host 0.0.0.0 --port 8100
 
   harry_frontend:
     build:
       context: ./niceGUI
     container_name: harry_frontend
-    volumes:
-      - ./niceGUI:/nicegui
     ports:
       - "8091:8091"
-    command: python3 /nicegui/main.py
     restart: always
+    command: python3 main.py

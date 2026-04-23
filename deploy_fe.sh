@@ -1,13 +1,14 @@
 #!/bin/bash
 
-echo "🛑 Stopping frontend container..."
-docker stop harry_frontend || true
-docker rm harry_frontend || true
+set -e
+
+echo "🔄 Pulling latest code..."
+git pull
 
 echo "🐳 Rebuilding frontend..."
-docker compose build harry_frontend
+docker compose up -d --build harry_frontend
 
-echo "🚀 Starting frontend..."
-docker compose up -d harry_frontend
+echo "🧹 Cleaning old images..."
+docker image prune -f
 
 echo "✅ Frontend deploy complete!"
