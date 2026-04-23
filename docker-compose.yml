@@ -1,7 +1,23 @@
+version: "3.9"
+
 services:
-  harry-demo:
-    build: .
-    container_name: harry-demo
+
+  backend:
+    build: ./backend
+    container_name: harry_backend
     ports:
-      - "8091:8091"
-    restart: always
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+
+  frontend:
+    build: ./niceGUI
+    container_name: harry_frontend
+    ports:
+      - "8091:8080"
+    volumes:
+      - ./niceGUI:/app
+    depends_on:
+      - backend
+    restart: unless-stopped

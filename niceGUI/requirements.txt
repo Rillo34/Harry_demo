@@ -1,0 +1,12 @@
+nicegui
+fastapi
+uvicorn
+pydantic
+python-dotenv
+pandas
+numpy
+plotly
+faker
+griffe
+matplotlib
+datetime
