@@ -1,6 +1,6 @@
 from nicegui import ui
 from components.leftdrawer import left_drawer
-from niceGUI.app_state import API_client, ui_controller
+from nicegui.app_state import API_client, ui_controller
 
 
 def home_page():
