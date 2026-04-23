@@ -7,8 +7,8 @@ services:
     volumes:
       - ./backend:/backend
     ports:
-      - "8090:8090"
-    command: python3 /backend/api.py
+      - "8100:8100"
+    command: uvicorn main:app --host 0.0.0.0 --port 8100
     restart: always
 
   harry_frontend:
@@ -16,8 +16,8 @@ services:
       context: ./niceGUI
     container_name: harry_frontend
     volumes:
-      - ./niceGUI:/frontend
+      - ./niceGUI:/nicegui
     ports:
-      - "8091:8080"
-    command: python3 /frontend/main.py
+      - "8091:8091"
+    command: python3 /nicegui/main.py
     restart: always
