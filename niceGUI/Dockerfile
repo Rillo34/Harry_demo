@@ -1,12 +1,10 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+WORKDIR /frontend
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 8080
-
-CMD ["python3", "main.py"]
+CMD ["python3", "/frontend/main.py"]

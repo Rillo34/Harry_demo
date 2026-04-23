@@ -1,25 +1,23 @@
-version: "3.9"
-
 services:
 
-  backend:
-    build: ./backend
+  harry_backend:
+    build:
+      context: ./backend
     container_name: harry_backend
-    ports:
-      - "8100:8100"
     volumes:
-      - ./backend:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8100
-    restart: unless-stopped
+      - ./backend:/backend
+    ports:
+      - "8090:8090"
+    command: python3 /backend/api.py
+    restart: always
 
-
-  frontend:
-    build: ./niceGUI
+  harry_frontend:
+    build:
+      context: ./niceGUI
     container_name: harry_frontend
-    ports:
-      - "8091:8091"
     volumes:
-      - ./niceGUI:/app
-    depends_on:
-      - backend
-    restart: unless-stopped
+      - ./niceGUI:/frontend
+    ports:
+      - "8091:8080"
+    command: python3 /frontend/main.py
+    restart: always
