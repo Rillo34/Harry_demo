@@ -16,4 +16,8 @@ services:
     ports:
       - "8091:8091"
     restart: always
+    environment:
+      - API_BASE=http://harry_backend:8100
+    depends_on:
+      - harry_backend
     command: python3 main.py

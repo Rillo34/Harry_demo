@@ -1,14 +1,13 @@
 #!/bin/bash
-
 set -e
 
-echo "🔄 Pulling latest code..."
+echo "🔄 Pull frontend..."
 git pull
 
-echo "🐳 Rebuilding frontend..."
-docker compose up -d --build harry_frontend
+echo "🧨 Recreating frontend (forces env reload)..."
+docker compose up -d --build --force-recreate harry_frontend
 
-echo "🧹 Cleaning old images..."
+echo "🧹 Cleanup..."
 docker image prune -f
 
-echo "✅ Frontend deploy complete!"
+echo "✅ Frontend deployed"
