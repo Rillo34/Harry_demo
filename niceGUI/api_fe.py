@@ -1,8 +1,9 @@
 import httpx
 from nicegui import ui
+import os 
 
 class APIController:
-    BASE = "http://backend:8100"   # Docker backend service name
+    BASE = os.getenv("API_BASE", "http://localhost:8100")  # Docker backend service name
 
     def __init__(self, controller=None):
         self.controller = controller

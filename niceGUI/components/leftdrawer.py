@@ -66,4 +66,9 @@ def left_drawer():
                     ui.item_label('Inspiration').classes('text-lg')
                 with ui.item_section().props('side'):
                     ui.icon('auto_awesome')   # wizard/magic icon
-
+            
+            with ui.item(on_click=lambda: ui.navigate.to('/backend_test')).props('tag=a'):
+                with ui.item_section():
+                    ui.item_label('Backend test').classes('text-lg')
+                with ui.item_section().props('side'):
+                    ui.icon('developer_board')   # wizard/magic icon
