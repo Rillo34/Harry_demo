@@ -35,6 +35,13 @@ def generate_test_data(n_candidates: int, n_jobs: int):
         "Scania IT", "Tink", "Sinch", "Voi", "Blocket",
         "Skatteverket IT", "Försäkringskassan IT", "Polisen IT"
     ]
+    swedish_locations_pool = [
+        "Stockholm", "Göteborg", "Malmö", "Uppsala", "Västerås",
+        "Örebro", "Linköping", "Norrköping", "Helsingborg", "Jönköping",
+        "Lund", "Umeå", "Gävle", "Sundsvall", "Halmstad",
+        "Karlstad", "Luleå", "Trollhättan"
+    ]
+
     jobs =[]
     for i in range(n_jobs):
         received_date = today - timedelta(days=random.randint(0, 10))
@@ -43,6 +50,7 @@ def generate_test_data(n_candidates: int, n_jobs: int):
         jobs.append({
             "job_id": f"job_{i+1:03d}",
             "title": fake.random_element(it_roles),
+            "location": fake.random_element(swedish_locations_pool),
             "customer": fake.random_element(it_customers_pool),
             "received_date": received_date.strftime('%Y-%m-%d'),
             "due_date": due_date.strftime('%Y-%m-%d'),
@@ -65,6 +73,7 @@ def generate_scores_df(candidates: list[dict], jobs: list[dict], nr_rows: int) -
             "cand_name": cand["cand_name"],
             "job_title": job["title"],
             "customer": job["customer"],
+            "location": job["location"],
             "received_date": job["received_date"],
             "due_date": job["due_date"],
             "comp_score": comp_score,
@@ -76,6 +85,10 @@ def generate_scores_df(candidates: list[dict], jobs: list[dict], nr_rows: int) -
             "cv_sent": False,
             "cv_sent_by": "",
             "cv_sent_at": "",
+            "not_valid": False,
+            "not_valid_by": "",
+            "not_valid_set": "",
+            "not_valid_reason": "",
             "id": f"{cand['cand_id']}_{job['job_id']}"
         })
         df = pd.DataFrame(rows)
@@ -200,13 +213,15 @@ class CandidateTable:
                         {'name': 'cand_name', 'label': 'Candidate', 'field': 'cand_name', 'sortable': True},
                         {'name': 'job_title', 'label': 'Job Title', 'field': 'job_title', 'sortable': True},
                         {'name': 'customer', 'label': 'Customer', 'field': 'customer', 'sortable': True},
-                        {'name': 'days_left', 'label': 'Due in days', 'field': 'days_left', 'sortable': True},
+                        {'name': 'location', 'label': 'Location', 'field': 'location', 'sortable': True},
                         {'name': 'comp_score', 'label': 'Match Rating', 'field': 'comp_score', 'sortable': True},
                         {'name': 'combined_score', 'label': 'Overall Rating', 'field': 'combined_score', 'sortable': True},
                         {'name': 'availability', 'label': 'Availability', 'field': 'weeks_since_last_assignment', 'sortable': True},
                         {'name': 'weeks_since_last_assignment', 'label': 'Weeks since assignment', 'field': 'weeks_since_last_assignment', 'sortable': True, 'visible': False},
                         {'name': 'months_since_last_assignment', 'label': 'Months since assignment', 'field': 'months_since_last_assignment', 'sortable': True},
-                        {'name': 'cv_sent', 'label': 'CV Sent', 'field': 'cv_sent', 'sortable': True}
+                        {'name': 'cv_sent', 'label': 'CV Sent', 'field': 'cv_sent', 'sortable': True},
+                        {'name': 'not_valid', 'label': 'Not valid', 'field': 'not_valid', 'sortable': True},
+
                     ],
                     rows=rows,
                     row_key='row_id',
@@ -268,6 +283,24 @@ class CandidateTable:
 
             </q-td>
         ''')
+        self.table.add_slot('body-cell-not_valid', '''
+            <q-td :props="props" class="cursor-pointer text-center"
+                @click="$parent.$emit('valid-click', props.row)">
+                
+                <q-icon 
+                    :name="props.row.not_valid ? 'close' : 'radio_button_unchecked'"
+                    :color="props.row.not_valid ? 'red-9' : 'grey-4'"
+                    :size="props.row.not_valid ? '25px' : '20px'"
+                    :style="props.row.not_valid ? 'font-weight: 200;' : ''"
+                >
+                    <q-tooltip v-if="props.row.not_valid" class="text-lg">
+                        Reason: {{ props.row.not_valid_reason }}<br>
+                        Set by: {{ props.row.not_valid_by }}
+                    </q-tooltip>
+                </q-icon>
+
+            </q-td>
+        ''')
         self.table.add_slot('body-cell-days_left', '''
             <q-td :props="props" class="text-right">
                 <q-badge
@@ -285,6 +318,7 @@ class CandidateTable:
 
         self.table.on('name_click', self.name_click)
         self.table.on('cv-click', self.cv_click)
+        self.table.on('valid-click', self.valid_click)
 
     def on_change_match(self, e):
         min_match = e.args
@@ -354,6 +388,35 @@ class CandidateTable:
             ui.button("Cancel", on_click=dialog.close).props("flat")
 
         dialog.open()
+    
+    def valid_click(self, e):
+        print("clicked row for not_valid: ", e.args)
+        ui.notify(f"valid click: {e.args['cand_name']}")
+        with ui.dialog() as dialog, ui.card().classes("w-[400px] p-4"):
+            ui.label(f"Opportunity {e.args['job_title']} not valid").classes("text-lg font-bold mb-4")
+            valid_checkbox = ui.checkbox("Not valid", value=e.args["not_valid"])
+            if valid_checkbox.value:
+                not_valid_by = ui.input("Set by", value=e.args.get("not_valid_by", ""))
+                not_valid_set = ui.input("Set at", value=e.args.get("not_valid_set", ""))
+                not_valid_reason = ui.input("Reason", value=e.args.get('not_valid_reason', ""))
+            else:
+                not_valid_by = ui.input("Set by", value=self.user)
+                not_valid_set = ui.input("Set at", value=pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"))
+                not_valid_reason = ui.input("Reason", value='')
+
+            def save():
+                rid = e.args["id"]
+                self.filtered_df.loc[self.filtered_df["id"] == rid, "not_valid"] = valid_checkbox.value
+                self.filtered_df.loc[self.filtered_df["id"] == rid, "not_valid_by"] = not_valid_by.value
+                self.filtered_df.loc[self.filtered_df["id"] == rid, "not_valid_set"] = not_valid_set.value
+                self.filtered_df.loc[self.filtered_df["id"] == rid, "not_valid_reason"] = not_valid_reason.value
+                self.update(self.filtered_df)
+                dialog.close()
+
+            ui.button("Save", on_click=save)
+            ui.button("Cancel", on_click=dialog.close).props("flat")
+
+        dialog.open()
 
 
     def apply_filters(self):
@@ -411,9 +474,10 @@ class CandidateTable:
 
 candidates, jobs = generate_test_data(10, 10)
 df = generate_scores_df(candidates, jobs, 100)
+print (df.head())
 
-def consultants_page():
-    left_drawer()
+@ui.page('/')
+def main_page():
     def update_table():
         new_candidates, new_jobs = generate_test_data(10, 10)
         new_df = generate_scores_df(new_candidates, new_jobs, 100)
