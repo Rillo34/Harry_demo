@@ -11,7 +11,9 @@ origins = [
     "http://localhost:8091",
     "http://127.0.0.1:8091",
     "http://localhost:8092",
-    "http://127.0.0.1:8092"
+    "http://127.0.0.1:8092",
+    "http://46.62.140.27:8095",  # Din server-IP med den NYA porten
+    "http://localhost:8095",      # Om du testar lokalt på den porten
 
 ]
 
