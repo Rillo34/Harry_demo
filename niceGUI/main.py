@@ -23,7 +23,7 @@ def route_backend_test():
     backend_test_page()
 
 if __name__ in {"__main__", "__mp_main__"}:
-    ui.run(host="0.0.0.0", port=8092)
+    ui.run(host="0.0.0.0", port=8091)
 
 
 
